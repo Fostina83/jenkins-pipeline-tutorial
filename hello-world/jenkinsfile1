@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+    
+    // Define parameters
+    parameters {
+        string(name: 'ENVIRONMENT', defaultValue: 'dev', description: 'Deployment environment')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests before deploying')
+        choice(name: 'BUILD_TYPE', choices: ['Debug', 'Release'], description: 'Choose the build type')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo "Building in ${params.BUILD_TYPE} mode..."
+                // Add build commands here, such as `sh 'mvn clean package'`
+            }
+        }
+        
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS == true }
+            }
+            steps {
+                echo 'Running tests...'
+                // Add test commands here, e.g., `sh 'mvn test'`
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo "Deploying to environment: ${params.ENVIRONMENT}"
+                // Add deployment commands here, e.g., `sh './deploy.sh'`
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
+        }
+    }
+}
